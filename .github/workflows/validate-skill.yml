@@ -2,54 +2,31 @@ name: Validate SKILL.md
 on:
   push:
     paths:
-      - 'templates/skill-template/**'
-      - 'skills/**/SKILL.md'
+      - 'templates/**'
+      - 'skills/**'
+      - 'scripts/**'
+      - '.github/workflows/validate-skill.yml'
   pull_request:
     paths:
-      - 'templates/skill-template/**'
-      - 'skills/**/SKILL.md'
+      - 'templates/**'
+      - 'skills/**'
+      - 'scripts/**'
+      - '.github/workflows/validate-skill.yml'
+
 jobs:
   validate:
+    name: Agent Skills Conformance Audit
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
-      - name: Install yamllint
-        run: pip install yamllint
-      - name: Validate SKILL.md files
+          python-version: '3.11'
+
+      - name: Run Validation Engine
         run: |
-          find . -type f -name 'SKILL.md' | while read file; do
-            echo "Validating $file"
-            # Check kebab-case name matches directory
-            dir_name=$(basename $(dirname "$file"))
-            skill_name=$(yq e '.name' "$file" 2>/dev/null || true)
-            if [[ -z "$skill_name" ]]; then
-              echo "❌ Missing name in $file"
-              exit 1
-            fi
-            # kebab-case validation
-            if [[ "$skill_name" != *"-"* ]]; then
-              echo "❌ Name $skill_name is not kebab-case in $file"
-              exit 1
-            fi
-            if [[ "$skill_name" != "$dir_name" ]]; then
-              echo "❌ Name $skill_name does not match directory $dir_name in $file"
-              exit 1
-            fi
-            # description length
-            desc=$(yq e '.description' "$file" 2>/dev/null || true)
-            if [[ -z "$desc" ]] || (( ${#desc} > 1024 )); then
-              echo "❌ Invalid description length in $file"
-              exit 1
-            fi
-            # line count limit
-            lines=$(wc -l < "$file")
-            if (( lines > 500 )); then
-              echo "❌ $file exceeds 500 line limit"
-              exit 1
-            fi
-            echo "✅ $file passed"
-          done
+          chmod +x ./scripts/validate-skills.sh
+          ./scripts/validate-skills.sh

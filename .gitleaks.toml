@@ -1,0 +1,11 @@
+title = "Sentinel Mexico Gitleaks Configuration"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allowlisted identifiers and test assets"
+paths = [
+  '''templates/''',
+  '''references/'''
+]
