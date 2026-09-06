@@ -1,12 +1,12 @@
 # Sentinel Mexico · Official Agent Skills Catalog
 
 [![Specification](https://img.shields.io/badge/spec-agentskills.io-blue.svg)](https://agentskills.io/specification)
-[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](version.txt)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](version.txt)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-30%2B%20AI%20Runtimes-purple.svg)](#supported-providers--installation-targets)
-[![Organization](https://img.shields.io/badge/org-Sentinel--Mexico-red.svg)](https://github.com/orgs/Sentinel-Mexico/repositories)
+[![Repository](https://img.shields.io/badge/repo-Cluster--Skills--for--Agents--STLMexico-red.svg)](https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico)
 
-The official skills catalog of **Sentinel Mexico**[cite: 12]. This repository hosts production-ready, source-grounded, and deterministic Agent Skills engineered under the [agentskills.io](https://agentskills.io/specification) standard[cite: 3, 5, 22]. Designed for enterprise orchestration, minimal token consumption, and seamless cross-platform installation across Claude Code, Cursor, Antigravity, GitHub Copilot, and more than 30 AI execution environments[cite: 2, 5, 14].
+The official skills catalog of **Sentinel Mexico**. This repository hosts production-ready, source-grounded, and deterministic Agent Skills engineered under the [agentskills.io](https://agentskills.io/specification) standard. Designed for enterprise orchestration, minimal token consumption, and seamless cross-platform installation across Claude Code, Cursor, Antigravity, GitHub Copilot, and more than 30 AI execution environments.
 
 ---
 
@@ -16,6 +16,8 @@ The official skills catalog of **Sentinel Mexico**[cite: 12]. This repository ho
 2. [Supported Providers & Installation Targets](#supported-providers--installation-targets)
 3. [Universal De-duplication Rule](#universal-de-duplication-rule)
 4. [Installation & Deployment](#installation--deployment)
+   - [Direct Remote Install from GitHub](#direct-remote-install-from-github)
+   - [Antigravity Specific Step-by-Step Setup](#antigravity-specific-step-by-step-setup)
    - [Deterministic Shell Installer (`install-skill.sh`)](#deterministic-shell-installer-install-skillsh)
    - [Rust Engine CLI (`skillinstaller`)](#rust-engine-cli-skillinstaller)
    - [Native Agent Package Managers & Plugin Registries](#native-agent-package-managers--plugin-registries)
@@ -32,93 +34,191 @@ The official skills catalog of **Sentinel Mexico**[cite: 12]. This repository ho
 
 ## Architectural Overview
 
-Skills in this repository are **not tools**[cite: 1]. While tools provide callable endpoints or APIs (e.g., executing a web search or running a database query), **Skills** inject procedural workflows, domain guardrails, structured policies, and execution playbooks into the agent's contextual memory[cite: 1, 11, 28].
+Skills in this repository are **not tools**[cite: 3]. While tools provide callable functions to take actions via APIs or external services[cite: 3, 16], **Skills** inject domain expertise, procedural instructions, guardrails, and execution playbooks into the agent's context[cite: 3, 16].
 
 Every skill in this catalog implements:
-- **Asymmetric Progressive Disclosure:** Initial discovery uses metadata (~100 tokens); full instructions (<5,000 tokens) load only upon activation, while heavy reference documents and deterministic scripts execute on demand[cite: 3, 5, 10, 17].
-- **Code-as-Skill Determinism:** Non-heuristic tasks are offloaded to standalone scripts (Python, Bash, Node.js) in `scripts/`, avoiding wasteful multi-turn LLM reasoning loops[cite: 2, 3, 24].
-- **Hermetic Packaging:** Zero runtime external dependencies for search and deterministic targets for multi-agent environments[cite: 2, 22].
+- **Asymmetric Progressive Disclosure:** Initial discovery reads only metadata (~100 tokens); full instructions (<5,000 tokens) load only upon activation when relevant, while heavy reference documents and scripts execute on demand[cite: 3, 5, 12].
+- **Code-as-Skill Determinism:** Complex operations, repetitive parsing, or regex routines are compiled into deterministic scripts inside `scripts/`, avoiding wasteful multi-turn LLM reasoning loops[cite: 2].
+- **Hermetic Packaging:** Self-contained skill units with predictable routing targets across all major coding runtimes[cite: 1, 2].
 
 ---
 
 ## Supported Providers & Installation Targets
 
-The installer maps skills from the source canonical directory (`skills/<skill-name>/`) directly to the target agent configuration trees[cite: 1, 2]. Paths are resolved relative to the active repository root (`project` scope) or the machine's user home directory (`user` scope)[cite: 2, 5].
+The installer maps skills from canonical subdirectories (`skills/<skill-name>/`) directly to target agent configuration trees[cite: 1, 2]. Paths are resolved relative to the active repository root (`project` scope) or the machine's user home directory (`user` scope)[cite: 1, 6].
 
 | Provider / AI Platform | Slug (`--providers`) | Project Scope Path (`project`) | User Scope Path (`user`) |
 | :--- | :--- | :--- | :--- |
-| **Universal (Shared Target)** | `universal` | `.agents/skills/<name>/`[cite: 2, 5] | `~/.config/agents/skills/<name>/`[cite: 2, 5] |
-| **AdaL** | `adal` | `.adal/skills/<name>/`[cite: 2, 5] | `~/.adal/skills/<name>/`[cite: 2, 5] |
-| **Amp** | `amp` | `.agents/skills/<name>/`[cite: 2, 5] | `~/.config/agents/skills/<name>/`[cite: 2, 5] |
-| **Antigravity** | `antigravity` | `.agent/skills/<name>/`[cite: 2, 5] | `~/.gemini/antigravity/skills/<name>/`[cite: 2, 5] |
-| **Augment** | `augment` | `.augment/skills/<name>/`[cite: 2, 5] | `~/.augment/skills/<name>/`[cite: 2, 5] |
-| **Claude Code** | `claude-code` | `.claude/skills/<name>/`[cite: 2, 5] | `~/.claude/skills/<name>/`[cite: 2, 5] |
-| **Cline** | `cline` | `.agents/skills/<name>/`[cite: 2, 5] | `~/.agents/skills/<name>/`[cite: 2, 5] |
-| **CodeBuddy** | `codebuddy` | `.codebuddy/skills/<name>/`[cite: 2, 5] | `~/.codebuddy/skills/<name>/`[cite: 2, 5] |
-| **Codex** | `codex` | `.agents/skills/<name>/`[cite: 2, 5] | `~/.codex/skills/<name>/`[cite: 2, 5] |
-| **Command Code** | `command-code` | `.commandcode/skills/<name>/`[cite: 2, 5] | `~/.commandcode/skills/<name>/`[cite: 2, 5] |
-| **Continue** | `continue` | `.continue/skills/<name>/`[cite: 2, 5] | `~/.continue/skills/<name>/`[cite: 2, 5] |
-| **Cortex Code (Snowflake)** | `cortex` | `.cortex/skills/<name>/`[cite: 2, 5] | `~/.snowflake/cortex/skills/<name>/`[cite: 2, 5] |
-| **Crush** | `crush` | `.crush/skills/<name>/`[cite: 2, 5] | `~/.config/crush/skills/<name>/`[cite: 2, 5] |
-| **Cursor** | `cursor` | `.agents/skills/<name>/`[cite: 2, 5] | `~/.cursor/skills/<name>/`[cite: 2, 5] |
-| **Droid (Factory)** | `droid` | `.factory/skills/<name>/`[cite: 2, 5] | `~/.factory/skills/<name>/`[cite: 2, 5] |
-| **Gemini CLI** | `gemini-cli` | `.agents/skills/<name>/`[cite: 2, 5] | `~/.gemini/skills/<name>/`[cite: 2, 5] |
-| **GitHub Copilot** | `github-copilot` | `.agents/skills/<name>/`[cite: 2, 5] | `~/.copilot/skills/<name>/`[cite: 2, 5] |
-| **Goose** | `goose` | `.goose/skills/<name>/`[cite: 2, 5] | `~/.config/goose/skills/<name>/`[cite: 2, 5] |
-| **iFlow CLI** | `iflow-cli` | `.iflow/skills/<name>/`[cite: 2, 5] | `~/.iflow/skills/<name>/`[cite: 2, 5] |
-| **Junie** | `junie` | `.junie/skills/<name>/`[cite: 2, 5] | `~/.junie/skills/<name>/`[cite: 2, 5] |
-| **Kilo Code** | `kilo` | `.kilocode/skills/<name>/`[cite: 2, 5] | `~/.kilocode/skills/<name>/`[cite: 2, 5] |
-| **Kimi Code CLI** | `kimi-cli` | `.agents/skills/<name>/`[cite: 2, 5] | `~/.config/agents/skills/<name>/`[cite: 2, 5] |
-| **Kiro CLI** | `kiro-cli` | `.kiro/skills/<name>/`[cite: 2, 5] | `~/.kiro/skills/<name>/`[cite: 2, 5] |
-| **Kode** | `kode` | `.kode/skills/<name>/`[cite: 2, 5] | `~/.kode/skills/<name>/`[cite: 2, 5] |
-| **MCPJam** | `mcpjam` | `.mcpjam/skills/<name>/`[cite: 2, 5] | `~/.mcpjam/skills/<name>/`[cite: 2, 5] |
-| **Mistral Vibe** | `mistral-vibe` | `.vibe/skills/<name>/`[cite: 2, 5] | `~/.vibe/skills/<name>/`[cite: 2, 5] |
-| **Mux** | `mux` | `.mux/skills/<name>/`[cite: 2, 5] | `~/.mux/skills/<name>/`[cite: 2, 5] |
-| **Neovate** | `neovate` | `.neovate/skills/<name>/`[cite: 2, 5] | `~/.neovate/skills/<name>/`[cite: 2, 5] |
-| **OpenClaw** | `openclaw` | `skills/<name>/`[cite: 2, 5] | `~/.openclaw/skills/<name>/`[cite: 2, 5] |
-| **OpenCode** | `opencode` | `.agents/skills/<name>/`[cite: 2, 5] | `~/.config/opencode/skills/<name>/`[cite: 2, 5] |
-| **OpenHands** | `openhands` | `.openhands/skills/<name>/`[cite: 2, 5] | `~/.openhands/skills/<name>/`[cite: 2, 5] |
-| **Pi** | `pi` | `.pi/skills/<name>/`[cite: 2, 5] | `~/.pi/agent/skills/<name>/`[cite: 2, 5] |
-| **Pochi** | `pochi` | `.pochi/skills/<name>/`[cite: 2, 5] | `~/.pochi/skills/<name>/`[cite: 2, 5] |
-| **Qoder** | `qoder` | `.qoder/skills/<name>/`[cite: 2, 5] | `~/.qoder/skills/<name>/`[cite: 2, 5] |
-| **Qwen Code** | `qwen-code` | `.qwen/skills/<name>/`[cite: 2, 5] | `~/.qwen/skills/<name>/`[cite: 2, 5] |
-| **Replit** | `replit` | `.agents/skills/<name>/`[cite: 2, 5] | `~/.config/agents/skills/<name>/`[cite: 2, 5] |
-| **Roo Code** | `roo` | `.roo/skills/<name>/`[cite: 2, 5] | `~/.roo/skills/<name>/`[cite: 2, 5] |
-| **Trae** | `trae` | `.trae/skills/<name>/`[cite: 2, 5] | `~/.trae/skills/<name>/`[cite: 2, 5] |
-| **Trae CN** | `trae-cn` | `.trae/skills/<name>/`[cite: 2, 5] | `~/.trae-cn/skills/<name>/`[cite: 2, 5] |
-| **Windsurf** | `windsurf` | `.windsurf/skills/<name>/`[cite: 2, 5] | `~/.codeium/windsurf/skills/<name>/`[cite: 2, 5] |
-| **Zencoder** | `zencoder` | `.zencoder/skills/<name>/`[cite: 2, 5] | `~/.zencoder/skills/<name>/`[cite: 2, 5] |
+| **Universal (Shared Target)** | `universal` | `.agents/skills/<name>/`[cite: 1] | `~/.config/agents/skills/<name>/`[cite: 1] |
+| **AdaL** | `adal` | `.adal/skills/<name>/`[cite: 1] | `~/.adal/skills/<name>/`[cite: 1] |
+| **Amp** | `amp` | `.agents/skills/<name>/`[cite: 1] | `~/.config/agents/skills/<name>/`[cite: 1] |
+| **Antigravity** | `antigravity` | `.agent/skills/<name>/`[cite: 1] | `~/.gemini/antigravity/skills/<name>/`[cite: 1] |
+| **Augment** | `augment` | `.augment/skills/<name>/`[cite: 1] | `~/.augment/skills/<name>/`[cite: 1] |
+| **Claude Code** | `claude-code` | `.claude/skills/<name>/`[cite: 1] | `~/.claude/skills/<name>/`[cite: 1] |
+| **Cline** | `cline` | `.agents/skills/<name>/`[cite: 1] | `~/.agents/skills/<name>/`[cite: 1] |
+| **CodeBuddy** | `codebuddy` | `.codebuddy/skills/<name>/`[cite: 1] | `~/.codebuddy/skills/<name>/`[cite: 1] |
+| **Codex** | `codex` | `.agents/skills/<name>/`[cite: 1] | `~/.codex/skills/<name>/`[cite: 1] |
+| **Command Code** | `command-code` | `.commandcode/skills/<name>/`[cite: 1] | `~/.commandcode/skills/<name>/`[cite: 1] |
+| **Continue** | `continue` | `.continue/skills/<name>/`[cite: 1] | `~/.continue/skills/<name>/`[cite: 1] |
+| **Cortex Code (Snowflake)** | `cortex` | `.cortex/skills/<name>/`[cite: 1] | `~/.snowflake/cortex/skills/<name>/`[cite: 1] |
+| **Crush** | `crush` | `.crush/skills/<name>/`[cite: 1] | `~/.config/crush/skills/<name>/`[cite: 1] |
+| **Cursor** | `cursor` | `.agents/skills/<name>/`[cite: 1] | `~/.cursor/skills/<name>/`[cite: 1] |
+| **Droid (Factory)** | `droid` | `.factory/skills/<name>/`[cite: 1] | `~/.factory/skills/<name>/`[cite: 1] |
+| **Gemini CLI** | `gemini-cli` | `.agents/skills/<name>/`[cite: 1] | `~/.gemini/skills/<name>/`[cite: 1] |
+| **GitHub Copilot** | `github-copilot` | `.agents/skills/<name>/`[cite: 1] | `~/.copilot/skills/<name>/`[cite: 1] |
+| **Goose** | `goose` | `.goose/skills/<name>/`[cite: 1] | `~/.config/goose/skills/<name>/`[cite: 1] |
+| **iFlow CLI** | `iflow-cli` | `.iflow/skills/<name>/`[cite: 1] | `~/.iflow/skills/<name>/`[cite: 1] |
+| **Junie** | `junie` | `.junie/skills/<name>/`[cite: 1] | `~/.junie/skills/<name>/`[cite: 1] |
+| **Kilo Code** | `kilo` | `.kilocode/skills/<name>/`[cite: 1] | `~/.kilocode/skills/<name>/`[cite: 1] |
+| **Kimi Code CLI** | `kimi-cli` | `.agents/skills/<name>/`[cite: 1] | `~/.config/agents/skills/<name>/`[cite: 1] |
+| **Kiro CLI** | `kiro-cli` | `.kiro/skills/<name>/`[cite: 1] | `~/.kiro/skills/<name>/`[cite: 1] |
+| **Kode** | `kode` | `.kode/skills/<name>/`[cite: 1] | `~/.kode/skills/<name>/`[cite: 1] |
+| **MCPJam** | `mcpjam` | `.mcpjam/skills/<name>/`[cite: 1] | `~/.mcpjam/skills/<name>/`[cite: 1] |
+| **Mistral Vibe** | `mistral-vibe` | `.vibe/skills/<name>/`[cite: 1] | `~/.vibe/skills/<name>/`[cite: 1] |
+| **Mux** | `mux` | `.mux/skills/<name>/`[cite: 1] | `~/.mux/skills/<name>/`[cite: 1] |
+| **Neovate** | `neovate` | `.neovate/skills/<name>/`[cite: 1] | `~/.neovate/skills/<name>/`[cite: 1] |
+| **OpenClaw** | `openclaw` | `skills/<name>/`[cite: 1] | `~/.openclaw/skills/<name>/`[cite: 1] |
+| **OpenCode** | `opencode` | `.agents/skills/<name>/`[cite: 1] | `~/.config/opencode/skills/<name>/`[cite: 1] |
+| **OpenHands** | `openhands` | `.openhands/skills/<name>/`[cite: 1] | `~/.openhands/skills/<name>/`[cite: 1] |
+| **Pi** | `pi` | `.pi/skills/<name>/`[cite: 1] | `~/.pi/agent/skills/<name>/`[cite: 1] |
+| **Pochi** | `pochi` | `.pochi/skills/<name>/`[cite: 1] | `~/.pochi/skills/<name>/`[cite: 1] |
+| **Qoder** | `qoder` | `.qoder/skills/<name>/`[cite: 1] | `~/.qoder/skills/<name>/`[cite: 1] |
+| **Qwen Code** | `qwen-code` | `.qwen/skills/<name>/`[cite: 1] | `~/.qwen/skills/<name>/`[cite: 1] |
+| **Replit** | `replit` | `.agents/skills/<name>/`[cite: 1] | `~/.config/agents/skills/<name>/`[cite: 1] |
+| **Roo Code** | `roo` | `.roo/skills/<name>/`[cite: 1] | `~/.roo/skills/<name>/`[cite: 1] |
+| **Trae** | `trae` | `.trae/skills/<name>/`[cite: 1] | `~/.trae/skills/<name>/`[cite: 1] |
+| **Trae CN** | `trae-cn` | `.trae/skills/<name>/`[cite: 1] | `~/.trae-cn/skills/<name>/`[cite: 1] |
+| **Windsurf** | `windsurf` | `.windsurf/skills/<name>/`[cite: 1] | `~/.codeium/windsurf/skills/<name>/`[cite: 1] |
+| **Zencoder** | `zencoder` | `.zencoder/skills/<name>/`[cite: 1] | `~/.zencoder/skills/<name>/`[cite: 1] |
 
 ---
 
 ## Universal De-duplication Rule
 
-To prevent filesystem sprawl and eliminate duplicate token loading during agent indexing, platforms sharing the `.agents/skills/` specification (Cursor, Codex, GitHub Copilot, Gemini CLI, Cline, Amp, Replit, OpenCode, and Kimi Code CLI) are collapsed by default into the `universal` target under project scope[cite: 2].
+Platforms sharing the `.agents/skills/` specification (Cursor, Codex, GitHub Copilot, Gemini CLI, Cline, Amp, Replit, OpenCode, Kimi Code CLI) collapse into the `universal` target under project scope[cite: 1, 2]:
 
 ```text
 Project Root/
 └── .agents/
     └── skills/
-        └── <skill-name>/   <--- Single physical target shared by all compliant runtimes
+        └── <skill-name>/   <--- Canonical physical target shared across compliant runtimes
 
 ```
 
-When targeting multiple agents within the same workspace, our installation engine creates a single canonical directory or symlink, avoiding redundant disk storage and context collisions.
+The installer prevents creating separate copies for runtimes targeting `.agents/skills/`, avoiding filesystem bloat and duplicate indexing.
 
 ---
 
 ## Installation & Deployment
 
+### Direct Remote Install from GitHub
+
+Install specific skills directly from this GitHub repository without cloning the full catalog:
+
+#### Option A: Using Universal Agent Skills Runner (`npx skills`)
+
+```bash
+# Project scope (install to current project)
+npx skills add Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico --skill <skill-name> --agent <agent-slug>
+
+# User scope (install globally across all local projects)
+npx skills add Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico --skill <skill-name> --agent <agent-slug> -g
+
+```
+
+#### Option B: Git Sparse Checkout (No Node.js Dependency)
+
+Extract only the targeted skill folder directly into your workspace:
+
+```bash
+# Set skill name and destination path
+SKILL_NAME="<skill-name>"
+DEST_DIR=".agent/skills" # Adjust based on target provider (e.g., .claude/skills or .agents/skills)
+
+mkdir -p "$DEST_DIR"
+git clone --depth 1 --filter=blob:none --sparse \
+  [https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico.git](https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico.git) \
+  .tmp-skills \
+  && cd .tmp-skills \
+  && git sparse-checkout set skills/$SKILL_NAME \
+  && mv skills/$SKILL_NAME ../"$DEST_DIR"/ \
+  && cd .. && rm -rf .tmp-skills
+
+```
+
+---
+
+### Antigravity Specific Step-by-Step Setup
+
+Antigravity isolates skill configurations to dedicated directories (`.agent/skills/` locally or `~/.gemini/antigravity/skills/` globally).
+
+#### Step 1: Target Selection
+
+* **Project Scope:** `<workspace-root>/.agent/skills/<skill-name>/`
+
+* **User Scope:** `~/.gemini/antigravity/skills/<skill-name>/`
+
+
+#### Step 2: Deployment
+
+Execute using the local installer script:
+
+```bash
+# Local Project Scope (symlinked)
+./scripts/install-skill.sh \
+  --skill <skill-name> \
+  --providers antigravity \
+  --scope project \
+  --target-dir /path/to/project \
+  --method symlink \
+  --force
+
+# Global User Scope
+./scripts/install-skill.sh \
+  --skill <skill-name> \
+  --providers antigravity \
+  --scope user \
+  --method symlink \
+  --force
+
+```
+
+Or deploy directly via remote command:
+
+```bash
+npx skills add Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico --skill <skill-name> --agent antigravity
+
+```
+
+#### Step 3: Verification
+
+Verify target directories on disk:
+
+```bash
+# Project scope verification
+ls -la .agent/skills/<skill-name>/
+
+# Global scope verification
+ls -la ~/.gemini/antigravity/skills/<skill-name>/
+
+```
+
+#### Step 4: Execution
+
+Start a new session in Antigravity. The agent indexes `name` and `description` frontmatter (~100 tokens) on boot and activates the skill workflow when matching instructions appear in prompt context.
+
+---
+
 ### Deterministic Shell Installer (`install-skill.sh`)
 
-Use the bundled POSIX-compliant deployment script located in `scripts/install-skill.sh`.
+Use the bundled POSIX-compliant deployment script located in `scripts/install-skill.sh`:
 
 #### Syntax
 
 ```bash
 ./scripts/install-skill.sh \
-  --skill <skill-name|all> \
-  --providers <slug1,slug2|universal|all> \
+  --skill <skill-name|comma-separated-list|all> \
+  --providers <provider-slug|universal|all> \
   --scope <project|user> \
   --method <symlink|copy> \
   [--target-dir <path>] \
@@ -126,10 +226,10 @@ Use the bundled POSIX-compliant deployment script located in `scripts/install-sk
 
 ```
 
-#### Common Examples
+#### Target Resolution Examples
 
 ```bash
-# 1. Install a specific skill for Antigravity & Claude Code in the current project (via symlinks)
+# 1. Install specific skill to current project via symlink for Claude and Antigravity
 ./scripts/install-skill.sh \
   --skill security-audit \
   --providers antigravity,claude-code \
@@ -137,19 +237,19 @@ Use the bundled POSIX-compliant deployment script located in `scripts/install-sk
   --method symlink \
   --force
 
-# 2. Deploy all skills in this repo globally for Universal and Windsurf runtimes
+# 2. Deploy multiple specific skills to universal target
 ./scripts/install-skill.sh \
-  --skill all \
-  --providers universal,windsurf \
-  --scope user \
-  --method copy
+  --skill data-pipeline,code-reviewer \
+  --providers universal \
+  --scope project \
+  --method symlink
 
-# 3. Deploy all skills to every supported provider detected on your machine
+# 3. Deploy all repository skills globally across all detected providers
 ./scripts/install-skill.sh \
   --skill all \
   --providers all \
-  --scope project \
-  --method symlink
+  --scope user \
+  --method copy
 
 ```
 
@@ -157,7 +257,7 @@ Use the bundled POSIX-compliant deployment script located in `scripts/install-sk
 
 ### Rust Engine CLI (`skillinstaller`)
 
-For enterprise environments with Rust toolchains, you can run the native `skillinstaller` engine:
+If compiled within a Rust toolchain, use the native `skillinstaller` engine:
 
 ```bash
 # Discover supported platforms on host
@@ -181,14 +281,12 @@ cargo run --bin install-skill -- install \
 
 ### Native Agent Package Managers & Plugin Registries
 
-If you are using external orchestration tools or official agent CLIs, install Sentinel Mexico skills directly using remote URLs:
-
 ```bash
 # Universal Agent Skills Installer (Node.js)
-npx skills add Sentinel-Mexico/skills/vibe-tdd-pipeline
+npx skills add Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico --skill vibe-tdd-pipeline
 
 # Claude Code CLI (Native Plugin Integration)
-claude plugin marketplace add Sentinel-Mexico/skills
+claude plugin marketplace add Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico
 claude plugin install vibe-tdd-pipeline@Sentinel-Mexico
 
 # CrewAI Organizations & Projects
@@ -206,10 +304,10 @@ Every skill residing in `skills/` must strictly comply with the [agentskills.io 
 
 ```text
 skills/<skill-name>/
-├── SKILL.md                 # Required: Canonical instructions and YAML frontmatter
-├── scripts/                 # Optional: Standalone deterministic code (Python, Bash, JS)
+├── SKILL.md                 # Required: Canonical instructions and YAML frontmatter (<500 lines)
+├── scripts/                 # Optional: Deterministic code (Python, Bash, Node.js)
 │   └── run.py
-├── references/              # Optional: In-depth reference docs loaded on demand
+├── references/              # Optional: In-depth reference manuals loaded on demand
 │   └── CHEAT_SHEET.md
 └── assets/                  # Optional: Templates, JSON schemas, static resources
     └── schema.json
@@ -220,7 +318,7 @@ skills/<skill-name>/
 
 ### The `SKILL.md` Specification
 
-The `SKILL.md` file defines both the discovery contract and execution instructions.
+The `SKILL.md` file defines both the discovery contract and execution instructions[cite: 3, 5]:
 
 ```markdown
 ---
@@ -231,7 +329,7 @@ compatibility: Universal (Python 3.10+, Docker CLI)
 metadata:
   author: Sentinel Mexico
   version: "1.0.0"
-  repository: [https://github.com/Sentinel-Mexico/skills](https://github.com/Sentinel-Mexico/skills)
+  repository: [https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico](https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico)
 allowed-tools: Bash(git:*) Bash(pytest:*) Read
 ---
 
@@ -252,10 +350,10 @@ Follow this step-by-step workflow when validating CI pipelines:
 
 #### Mandatory Frontmatter Fields
 
-* `name`: Max 64 chars. Lowercase alphanumeric characters and hyphens only (`^[a-z0-9-]+$`). Must strictly match the parent directory name.
+* `name`: Max 64 chars. Lowercase alphanumeric characters and hyphens only (`^[a-z0-9-]+$`). Must match the directory name.
 
 
-* `description`: 1 to 1024 chars. Must act as an **activation contract**—clearly defining what the skill executes and when the agent must load it.
+* `description`: 1 to 1024 chars. Must act as an **activation contract**—defining what the skill executes and when the agent should activate it.
 
 
 * `metadata.author`: Must be attributed to `Sentinel Mexico`.
@@ -269,15 +367,13 @@ Follow this step-by-step workflow when validating CI pipelines:
 
 ### Progressive Disclosure & Token Optimization
 
-To prevent agent token degradation and reduce execution costs, skills must adhere to strict size ceilings:
-
-1. **Discovery Footprint (~100 tokens):** At startup, agents load only the skill `name` and `description`. Descriptions must remain concise and trigger-focused.
+1. **Discovery Footprint (~100 tokens):** At startup, agents load only the skill `name` and `description`.
 
 
 2. **Body Ceiling (<500 lines / <5,000 tokens):** The body of `SKILL.md` must not exceed 500 lines.
 
 
-3. **On-Demand Reference:** Shift detailed reference manuals, data tables, or long-form documentation into `references/`. The agent accesses them via tool calls (e.g., `read_skill_resource`) only if explicitly needed.
+3. **On-Demand Reference:** Shift detailed manuals, syntax tables, or long-form documentation into `references/`. The agent reads them via tools only when explicitly needed.
 
 
 
@@ -285,15 +381,13 @@ To prevent agent token degradation and reduce execution costs, skills must adher
 
 ### Deterministic Scripts (Code-as-Skill)
 
-Do not ask the LLM to perform arithmetic, complex string parsing, regex transformations, or repeated external API lookups in multi-turn reasoning prompts.
+Do not force the LLM to handle heavy arithmetic, large-scale string parsing, regex transformations, or repeated external lookups in multi-turn reasoning loops.
 
-* Place executable code inside `scripts/`.
-
-
-* Scripts must include their own error-handling and return exit codes (`0` for success, non-zero for failure).
+* Place executable logic inside `scripts/`.
 
 
-* Outputs must be structured (JSON, TSV, or key-value verdicts), minimizing output tokens fed back into the agent context.
+* Scripts must include comprehensive error-handling and return exit codes (`0` for success, non-zero for failure).
+* Outputs must be structured (JSON, TSV, or concise key-value lines) to minimize output token usage.
 
 
 
@@ -301,28 +395,27 @@ Do not ask the LLM to perform arithmetic, complex string parsing, regex transfor
 
 ## Creating & Contributing a New Skill
 
-Use the built-in scaffolding template to initiate a new skill:
+Use the built-in template to scaffold a new skill:
 
 ```bash
 # 1. Clone repository
-git clone [https://github.com/Sentinel-Mexico/skills.git](https://github.com/Sentinel-Mexico/skills.git)
-cd skills
+git clone [https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico.git](https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico.git)
+cd Cluster-Skills-for-Agents-STLMexico
 
-# 2. Scaffold a new skill from standard template
+# 2. Scaffold a new skill from template
 cp -r templates/skill-template skills/<my-new-skill>
 cd skills/<my-new-skill>
 
-# 3. Rename frontmatter name to match folder
+# 3. Rename frontmatter to match directory name
 sed -i 's/skill-template/<my-new-skill>/g' SKILL.md
 
 ```
 
 ### Local Validation Check
 
-Run the repository validation suite prior to pushing or opening a Pull Request:
+Validate frontmatter compliance and token ceilings before opening a Pull Request:
 
 ```bash
-# Validate frontmatter rules, regex paths, and token ceilings
 bash ./scripts/validate-skills.sh
 
 ```
@@ -331,24 +424,24 @@ bash ./scripts/validate-skills.sh
 
 ## Security, Governance & Audit Boundaries
 
-Skills possess deep access to agent actions and local shell environments. Sentinel Mexico strictly isolates and audits each skill through automated workflows:
+Skills have operational access to local agent tools and shell environments. Sentinel Mexico enforces multi-layer audit boundaries:
 
-1. **Static Analysis & Sanitization:** All submissions are scanned via automated GitHub Actions for:
-* Hardcoded tokens, API keys, and private credentials.
-
-
-* Destructive shell invocation (`rm -rf /`, formatting commands, unsafe piped bash).
+1. **Static Analysis & Sanitization:** Automated GitHub Actions inspect incoming skills for:
+* Hardcoded tokens, API keys, and credential leaks.
 
 
-* Prompt-injection payloads and jailbreak trigger strings.
+* Destructive shell patterns (`rm -rf /`, drive formatting, unvalidated piped executions).
+
+
+* Prompt-injection payloads and unauthorized context override strings.
 
 
 
 
-2. **Execution Sandboxing:** Any skill leveraging executable binaries in `scripts/` is designated as **Tier-3 (Supervised / Sandboxed)**. Agents must execute scripts in isolated runtimes (containers, firejail, or workspace-isolated runners).
+2. **Execution Sandboxing:** Any skill containing executable scripts in `scripts/` must be run in containerized, firewalled, or supervised environments.
 
 
-3. **Supply-Chain Integrity:** Never install skills from unverified forks. All production skills must originate from the protected branches of the `Sentinel-Mexico` organization.
+3. **Supply-Chain Integrity:** Avoid installing skills from unverified origins. Production skills must originate from the main branch of `Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico`.
 
 
 
@@ -358,6 +451,6 @@ Skills possess deep access to agent actions and local shell environments. Sentin
 
 This repository is designed, maintained, and governed by **Sentinel Mexico**.
 
-* **Organization Repositories:** [https://github.com/orgs/Sentinel-Mexico/repositories](https://github.com/orgs/Sentinel-Mexico/repositories)
+* **Repository:** [https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico](https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico)
 * **License:** Apache-2.0 open-source license.
-* **Support & Security Disclosures:** File an issue or security advisory directly via the GitHub repository.
+* **Support & Security Disclosures:** File an issue or security advisory directly via this GitHub repository.

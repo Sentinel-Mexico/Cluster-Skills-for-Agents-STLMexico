@@ -5,6 +5,15 @@ All notable changes to this project during active development are documented her
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-09-06
+
+### Features
+- Added canonical skill `project-init` compliant with `agentskills.io` standard.
+- Implemented deterministic scaffolding engine `skills/project-init/scripts/scaffold.py` with Existing Project Guard and dev branch resolution.
+- Integrated batch Grill-Me architecture interview in `skills/project-init/SKILL.md` (<130 lines).
+- Enforced invariants per environment: localized dictionaries in `<env>/locale/` and media segregation in `<env>/src/img/` and `<env>/src/video/`.
+- Created comprehensive architecture and technical rationale guide in `skills/project-init/references/REFERENCE.md`.
+
 ## [0.1.1] - 2026-09-06
 
 ### Documentation
