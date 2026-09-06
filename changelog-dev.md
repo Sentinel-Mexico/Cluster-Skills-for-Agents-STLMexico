@@ -5,6 +5,15 @@ All notable changes to this project during active development are documented her
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-09-06
+
+### Features
+- Added canonical skill `git-push-governor` compliant with `agentskills.io` standard.
+- Implemented deterministic push discovery and changelog injector `skills/git-push-governor/scripts/push_governor.py` with `--discover` and `--sync-changelog [dev|main|both]`.
+- Enforced strict activation precondition gate in `skills/git-push-governor/SKILL.md` (<135 lines) executing exclusively at task completion.
+- Formulated single-turn interactive branch query pattern with `[A] Todos` and `[N] Ninguno` options.
+- Authored technical reference in `skills/git-push-governor/references/REFERENCE.md` detailing branch-to-changelog routing and anti-inflation policies.
+
 ## [0.3.0] - 2026-09-06
 
 ### Features
