@@ -5,6 +5,14 @@ All notable changes to this project during active development are documented her
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-09-06
+
+### Features
+- Added canonical skill `semver-governor` compliant with `agentskills.io` standard.
+- Implemented deterministic SemVer calculation engine `skills/semver-governor/scripts/semver_bump.py` with `--diff-stat`, strict regex checking, atomic `package.json` updates, and production milestone enforcement (>= 1.0.0).
+- Created canonical skill instruction contract `skills/semver-governor/SKILL.md` (<110 lines).
+- Authored technical reference in `skills/semver-governor/references/REFERENCE.md` detailing change classification matrices and production milestone rules.
+
 ## [0.2.0] - 2026-09-06
 
 ### Features
