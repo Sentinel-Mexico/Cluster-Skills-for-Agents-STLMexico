@@ -1,7 +1,7 @@
-```markdown
 # Sentinel Mexico · Official Agent Skills Catalog
 
 [![Specification](https://img.shields.io/badge/spec-agentskills.io-blue.svg)](https://agentskills.io/specification)
+[![Version](https://img.shields.io/badge/version-0.1.1-blue.svg)](version.txt)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-30%2B%20AI%20Runtimes-purple.svg)](#supported-providers--installation-targets)
 [![Organization](https://img.shields.io/badge/org-Sentinel--Mexico-red.svg)](https://github.com/orgs/Sentinel-Mexico/repositories)
@@ -361,9 +361,3 @@ This repository is designed, maintained, and governed by **Sentinel Mexico**.
 * **Organization Repositories:** [https://github.com/orgs/Sentinel-Mexico/repositories](https://github.com/orgs/Sentinel-Mexico/repositories)
 * **License:** Apache-2.0 open-source license.
 * **Support & Security Disclosures:** File an issue or security advisory directly via the GitHub repository.
-
-
-
-```
-
-```
