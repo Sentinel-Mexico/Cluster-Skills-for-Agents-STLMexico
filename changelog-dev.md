@@ -5,6 +5,15 @@ All notable changes to this project during active development are documented her
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-09-06
+
+### Features
+- Added canonical skill `sec-optimizer` compliant with `agentskills.io` standard.
+- Implemented static code security and performance auditor `skills/sec-optimizer/scripts/security_auditor.py` scanning for hardcoded secrets (CWE-798), unsafe code/command injection (CWE-78/94), dynamic SQL concatenation (CWE-89), XSS vectors (CWE-79), synchronous blocking file I/O, quadratic nested loops ($O(N^2)$), and high-frequency intervals.
+- Integrated strict Aesthetic Protection Invariant (UX Guardrail) in `skills/sec-optimizer/SKILL.md` (<160 lines) prohibiting removal of modern design tokens, glassmorphism, or key animations, mandating hardware-accelerated CSS transitions (`transform`, `opacity`) instead.
+- Formalized 3-phase Plan-Validate-Execute workflow with Human-in-the-Loop gate requiring explicit human approval (`APROBAR TODO`, `APROBAR <ID_LIST>`, `CANCELAR`) before modifying any source code.
+- Authored technical reference manual in `skills/sec-optimizer/references/REFERENCE.md` documenting CWE/OWASP taxonomies, browser rendering pipeline optimization, and approval protocol rules.
+
 ## [0.7.0] - 2026-09-06
 
 ### Features
