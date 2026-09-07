@@ -1,7 +1,7 @@
 # Sentinel Mexico · Official Agent Skills Catalog
 
 [![Specification](https://img.shields.io/badge/spec-agentskills.io-blue.svg)](https://agentskills.io/specification)
-[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](version.txt)
+[![Version](https://img.shields.io/badge/version-0.5.0-blue.svg)](version.txt)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-30%2B%20AI%20Runtimes-purple.svg)](#supported-providers--installation-targets)
 [![Repository](https://img.shields.io/badge/repo-Cluster--Skills--for--Agents--STLMexico-red.svg)](https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico)

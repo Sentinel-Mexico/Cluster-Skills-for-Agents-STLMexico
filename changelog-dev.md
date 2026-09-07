@@ -5,6 +5,15 @@ All notable changes to this project during active development are documented her
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-09-06
+
+### Features
+- Added canonical skill `i18n-governor` compliant with `agentskills.io` standard.
+- Implemented deterministic i18n management engine `skills/i18n-governor/scripts/i18n_manager.py` with multi-domain recursive discovery, 100% key parity auditing (`--audit`), differential extraction (`--get-diff`), and hierarchical patch injection (`--apply-patch`).
+- Enforced Domain Context Lock architecture isolating translation domains across monorepo subsystems (`frontend::locale`, `backend::locale`, etc.).
+- Standardized Zero-Hardcoding Policy, strict ban on untranslated English fallbacks, and technical whitelist standards in `skills/i18n-governor/SKILL.md` (<135 lines).
+- Authored reference manual in `skills/i18n-governor/references/REFERENCE.md` detailing crawler boundaries and whitelist specifications.
+
 ## [0.4.0] - 2026-09-06
 
 ### Features
