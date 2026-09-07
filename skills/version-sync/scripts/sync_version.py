@@ -146,8 +146,11 @@ def discover_occurrences(project_root: Path, manifest_path: Path) -> Dict[str, A
 
         matched = False
         for pat in PATTERNS:
-            if pat.search(content):
-                matched = True
+            for m in pat.finditer(content):
+                if m.group("ver") == target_version:
+                    matched = True
+                    break
+            if matched:
                 break
 
         if matched:

@@ -1,3 +1,8 @@
 {
-  "tracked_files": []
+  "ground_truth_version": "0.7.0",
+  "tracked_files_count": 2,
+  "tracked_files": [
+    "README.md",
+    "version.txt"
+  ]
 }

@@ -5,6 +5,16 @@ All notable changes to this project during active development are documented her
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-09-06
+
+### Features
+- Added canonical skill `readme-generator` compliant with `agentskills.io` standard.
+- Implemented deterministic inspection and cadence engine `skills/readme-generator/scripts/readme_engine.py` supporting empty README detection, user-forced runs (`--force`), 5-change cadence accumulation ($\Delta \ge 5$), persistent state management in `assets/readme-state.json`, and counter reset (`--reset-counter`).
+- Automated generation of Shields.io badges with `style=for-the-badge` for Version, License, Standard, and detected runtimes (Node.js, Python, TypeScript, Bash, Electron).
+- Implemented clean, sanitized 2-level directory tree generator ignoring version control, build outputs, and dependencies.
+- Created canonical skill contract `skills/readme-generator/SKILL.md` (<175 lines) with strict exclusion clause separating documentation generation from version bump synchronization (`version-sync`).
+- Authored technical reference manual in `skills/readme-generator/references/REFERENCE.md` detailing cadence formulas, section blueprints, and boundary specifications.
+
 ## [0.6.1] - 2026-09-06
 
 ### Refactoring
