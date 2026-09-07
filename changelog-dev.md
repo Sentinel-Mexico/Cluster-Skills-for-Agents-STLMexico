@@ -5,6 +5,15 @@ All notable changes to this project during active development are documented her
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-09-06
+
+### Features
+- Added canonical skill `version-sync` compliant with `agentskills.io` standard.
+- Implemented deterministic universal version synchronization engine `skills/version-sync/scripts/sync_version.py` with multi-tier discovery (`--discover`) and atomic propagation (`--sync`).
+- Supported pattern detection across frontend UI components, configuration manifests (JSON/TOML/YAML), source code variables, and markdown badges.
+- Created persistent tracking manifest `skills/version-sync/assets/version-manifest.json`.
+- Authored canonical operational contract `skills/version-sync/SKILL.md` (<110 lines) and technical reference manual `skills/version-sync/references/REFERENCE.md`.
+
 ## [0.5.0] - 2026-09-06
 
 ### Features
