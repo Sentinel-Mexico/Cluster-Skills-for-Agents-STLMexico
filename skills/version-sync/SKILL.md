@@ -1,28 +1,32 @@
 ---
 name: version-sync
-description: "Universal repository version synchronizer. Recursively discovers and updates all occurrences of the application version across frontend UI components, configuration manifests, source constants, and documentation prior to git push."
+description: "Universal repository version synchronizer. Recursively scans and updates all occurrences of the application version across plaintext version files (version.txt), frontend UI components, configuration manifests, code constants, and documentation prior to git push."
 license: Apache-2.0
 compatibility: Universal (Python 3.10+, Git CLI)
 metadata:
   author: "Sentinel Mexico"
-  version: "1.0.0"
+  version: "1.1.0"
   repository: "https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico"
 allowed-tools: Bash(git:*) Bash(python3:*) Read Write
 ---
 
 # Universal Version Synchronizer (`version-sync`)
 
-Canonical operational contract for discovering, tracking, and propagating semantic versions across multi-tier repositories without LLM context token consumption.
+Canonical operational contract for recursively discovering, tracking, and propagating the application version across plaintext version files, visual frontend components, source code constants, configuration manifests, and documentation without LLM context token consumption.
 
 ---
 
-## Execution Flow
+## Execution Flow & Lifecycle Gate
+
+> [!IMPORTANT]
+> Universal version synchronization is **mandatory prior to executing any commit or push cycle** coordinated by `git-push-governor`.
+> - **Sequence Invariant:** Run `semver-governor` (calculate bump) ➔ `version-sync` (propagate across all files) ➔ `git-push-governor` (commit & push).
 
 ```
 [SemVer Bump Applied via semver-governor]
                     │
                     ▼
-[Step 1: Universal Discovery & Tracking]
+[Step 1: Universal Discovery & Indexing]
 python3 scripts/sync_version.py --discover
                     │
                     ▼
@@ -30,36 +34,39 @@ python3 scripts/sync_version.py --discover
 python3 scripts/sync_version.py --sync
                     │
                     ▼
-[Ready for Final Push: Trigger git-push-governor]
+[Release Coordination: Trigger git-push-governor]
 ```
 
 ---
 
 ### Step 1: Universal Discovery (`--discover`)
 
-Scans all project text files (supporting `.tsx`, `.jsx`, `.vue`, `.svelte`, `.html`, `.php`, `.ts`, `.js`, `.py`, `.json`, `.md`, `.toml`, `.yaml`, etc.) to locate version declarations, constants, UI footer labels, and documentation badges:
+Recursively scans all project files without static extension constraints (supporting `.tsx`, `.jsx`, `.vue`, `.svelte`, `.html`, `.php`, `.ts`, `.js`, `.py`, `.go`, `.rs`, `.json`, `.md`, `.toml`, `.yaml`, `.xml`, `.ini`, `.env.example`, etc.):
 
 ```bash
 python3 scripts/sync_version.py --discover
 ```
 
+#### Safe Filtering & Discovery Rules:
+* **Binary & Size Guards:** Automatically skips non-text binary files (null-byte detection in first 1024 bytes) and files exceeding 2 MB.
+* **Ignored Boundaries:** Strictly ignores `node_modules/`, `.git/`, `dist/`, `build/`, `coverage/`, `.next/`, `.turbo/`, `__pycache__/`, `.agent/`, `.agents/`.
+* **Persistent Manifest:** Registers discovered file paths in `assets/version-manifest.json`.
+
 Expected JSON Output:
 ```json
 {
-  "status": "ok",
-  "ground_truth_version": "1.2.0",
-  "manifest_path": ".../assets/version-manifest.json",
-  "discovered_count": 4,
-  "tracked_files": [
+  "status": "discovered",
+  "count": 6,
+  "files": [
+    ".env.example",
     "README.md",
+    "VERSION",
     "package.json",
-    "src/components/Footer.tsx",
+    "src/views/Home.vue",
     "version.txt"
   ]
 }
 ```
-
-The discovery step persists tracked file locations inside `assets/version-manifest.json` for deterministic tracking.
 
 ---
 
@@ -71,7 +78,7 @@ Propagates the canonical active version across all tracked occurrences while pre
 python3 scripts/sync_version.py --sync
 ```
 
-Or pass an explicit version override if desired:
+Or propagate an explicit target version override:
 
 ```bash
 python3 scripts/sync_version.py --sync --new-version "1.3.0"
@@ -82,11 +89,13 @@ Expected JSON Output:
 {
   "status": "synced",
   "target_version": "1.3.0",
-  "files_updated": 4,
+  "files_updated": 6,
   "updated_paths": [
+    ".env.example",
     "README.md",
+    "VERSION",
     "package.json",
-    "src/components/Footer.tsx",
+    "src/views/Home.vue",
     "version.txt"
   ]
 }
@@ -94,8 +103,8 @@ Expected JSON Output:
 
 ---
 
-## Integration with Repository Governance
+## Token Economy Guardrails
 
-* **Pre-Push Invariant:** Always execute `version-sync` immediately after a `semver-governor` bump and **prior** to activating `git-push-governor`.
-* **Zero Token Ingestion:** Never ask the LLM to inspect whole files or substitute strings manually; all pattern matching is offloaded to `scripts/sync_version.py`.
-* **Deep Reference:** For supported regex patterns and category examples, consult `references/REFERENCE.md`.
+1. **Zero LLM Prompt Rewrites:** Never request the model to manually edit or rewrite files just to update version strings. All substitution is handled deterministically by `scripts/sync_version.py`.
+2. **Contextual Preservation:** Plaintext files (`version.txt`, `VERSION`) are replaced cleanly while UI elements and code constants preserve surrounding syntax.
+3. **Deep Reference:** For supported regex patterns and category examples, consult `references/REFERENCE.md`.

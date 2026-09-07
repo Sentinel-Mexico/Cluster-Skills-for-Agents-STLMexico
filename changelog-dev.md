@@ -5,6 +5,14 @@ All notable changes to this project during active development are documented her
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-09-06
+
+### Refactoring
+- Enhanced `version-sync` deterministic engine (`sync_version.py`) with universal non-restricted file crawling.
+- Added strict defensive guards against binary files (null byte scan in first 1024 bytes) and oversized files (>2 MB).
+- Expanded contextual regex to support plaintext version files (`version.txt`, `VERSION`, `.version`), environment templates (`.env.example`), case-insensitive constants across all major programming languages, XML manifests (`pom.xml`), and multi-framework UI templates (React, Vue, Svelte, Astro).
+- Updated `skills/version-sync/SKILL.md` (v1.1.0) and technical reference documentation in `skills/version-sync/references/REFERENCE.md`.
+
 ## [0.6.0] - 2026-09-06
 
 ### Features

@@ -30,36 +30,38 @@ IGNORED_DIRS = {
     "out",
 }
 
-BINARY_EXTENSIONS = {
-    ".png", ".jpg", ".jpeg", ".gif", ".ico", ".webp", ".svgz",
-    ".mp4", ".mov", ".avi", ".mkv", ".webm",
-    ".pdf", ".zip", ".tar", ".gz", ".7z", ".rar",
-    ".woff", ".woff2", ".ttf", ".eot", ".otf",
-    ".exe", ".bin", ".pyc", ".db", ".sqlite", ".iso"
+MAX_FILE_SIZE_BYTES = 2 * 1024 * 1024  # 2 MB size ceiling to prevent memory issues
+
+DEDICATED_VERSION_FILENAMES = {
+    "version.txt",
+    "VERSION",
+    ".version",
+    "version",
 }
 
-# Contextual regex patterns for matching versions in diverse file formats
-# Each pattern group must have (?P<prefix>...), (?P<ver>\d+\.\d+\.\d+), (?P<suffix>...)
+# Contextual regex patterns matching versions across diverse languages and formats
 PATTERNS = [
-    # 1. JSON / YAML / TOML configs
-    re.compile(r'(?P<prefix>["\'](?:app_)?version["\']\s*:\s*["\'])(?P<ver>\d+\.\d+\.\d+)(?P<suffix>["\'])'),
-    re.compile(r'(?P<prefix>(?:^|\n)\s*version\s*=\s*["\'])(?P<ver>\d+\.\d+\.\d+)(?P<suffix>["\'])'),
-    re.compile(r'(?P<prefix>(?:^|\n)\s*version\s*:\s*["\'])(?P<ver>\d+\.\d+\.\d+)(?P<suffix>["\'])'),
-    # 2. Source constants (JS, TS, Python, Go, Rust, PHP, etc.)
-    re.compile(r'(?P<prefix>(?:const|let|var|val|export const|VERSION|appVersion|APP_VERSION|__version__)\s*[:=]\s*["\'])(?P<ver>\d+\.\d+\.\d+)(?P<suffix>["\'])'),
-    # 3. Badges in Markdown & Documentation
+    # 1. JSON, TOML, YAML, INI, Properties, Env manifests
+    re.compile(r'(?P<prefix>["\']?(?:[a-zA-Z0-9_]*version[a-zA-Z0-9_]*)["\']?\s*[:=]\s*["\']?)(?P<ver>\d+\.\d+\.\d+)(?P<suffix>["\']?)', re.IGNORECASE),
+    re.compile(r'(?P<prefix><version>)(?P<ver>\d+\.\d+\.\d+)(?P<suffix><\/version>)', re.IGNORECASE),
+
+    # 2. Source code constants (TS, JS, Python, Go, Rust, PHP, Java, C, C++, etc.)
+    re.compile(r'(?P<prefix>(?:const|let|var|val|export const|export let|final|pub const|public static final String)?\s*(?:[a-zA-Z0-9_]*version[a-zA-Z0-9_]*|__version__)\s*(?::\s*[^=]+)?[:=]\s*["\'])(?P<ver>\d+\.\d+\.\d+)(?P<suffix>["\'])', re.IGNORECASE),
+
+    # 3. Badges in Markdown, RST, and Documentation
     re.compile(r'(?P<prefix>version-)(?P<ver>\d+\.\d+\.\d+)(?P<suffix>-(?:blue|green|red|purple|orange|yellow|brightgreen|informational)\.svg)'),
     re.compile(r'(?P<prefix>\[!\[Version\]\(https://img\.shields\.io/badge/version-)(?P<ver>\d+\.\d+\.\d+)(?P<suffix>-blue\.svg\))'),
-    # 4. UI / Frontend templates (HTML, JSX, TSX, Vue, Svelte, Blade, etc.)
+
+    # 4. UI / Frontend templates (HTML, JSX, TSX, Vue, Svelte, Astro, Blade, etc.)
     re.compile(r'(?P<prefix><(?:span|div|p|small|footer|h\d|b|strong)[^>]*>\s*(?:[vV]|Version[:\s]*|v\.\s*)?)(?P<ver>\d+\.\d+\.\d+)(?P<suffix>\s*<\/(?:span|div|p|small|footer|h\d|b|strong)>)'),
     re.compile(r'(?P<prefix>(?:App|Version|Release|v)\s+v?)(?P<ver>\d+\.\d+\.\d+)(?P<suffix>(?:<\/|[^\d\.]|$))'),
 ]
 
 
-def is_binary_file(filepath: Path) -> bool:
-    if filepath.suffix.lower() in BINARY_EXTENSIONS:
-        return True
+def is_binary_or_oversized(filepath: Path) -> bool:
     try:
+        if filepath.stat().st_size > MAX_FILE_SIZE_BYTES:
+            return True
         with open(filepath, "rb") as fh:
             chunk = fh.read(1024)
             if b"\x00" in chunk:
@@ -100,11 +102,10 @@ def get_ground_truth_version(project_root: Path) -> str:
 def find_manifest_file(project_root: Path, custom_path: Optional[str] = None) -> Path:
     if custom_path:
         return Path(custom_path).resolve()
-    # Default inside skills/version-sync/assets/version-manifest.json
+    # Canonical location inside skills/version-sync/assets/version-manifest.json
     internal_manifest = Path(__file__).resolve().parent.parent / "assets" / "version-manifest.json"
     if internal_manifest.parent.exists():
         return internal_manifest
-    # Fallback to project root assets
     return project_root / "assets" / "version-manifest.json"
 
 
@@ -114,10 +115,9 @@ def scan_project_files(project_root: Path) -> List[Path]:
         dirs[:] = [d for d in dirs if d not in IGNORED_DIRS and not d.startswith(".")]
         for f in files:
             fp = Path(root) / f
-            # Ignore self manifest and git metadata
-            if fp.name == "version-manifest.json" or fp.name.startswith("."):
+            if fp.name == "version-manifest.json":
                 continue
-            if is_binary_file(fp):
+            if is_binary_or_oversized(fp):
                 continue
             candidates.append(fp)
     return candidates
@@ -133,17 +133,18 @@ def discover_occurrences(project_root: Path, manifest_path: Path) -> Dict[str, A
         # Protect historical changelogs from indiscriminate replacement
         if rel_str in ["changelog.md", "changelog-dev.md"]:
             continue
+
+        # Dedicated version files
+        if fp.name in DEDICATED_VERSION_FILENAMES:
+            discovered_files.add(rel_str)
+            continue
+
         try:
             content = fp.read_text(encoding="utf-8")
         except Exception:
             continue
 
         matched = False
-        # Exact match of version.txt single line
-        if fp.name == "version.txt" and content.strip() == target_version:
-            discovered_files.add(rel_str)
-            continue
-
         for pat in PATTERNS:
             if pat.search(content):
                 matched = True
@@ -166,11 +167,9 @@ def discover_occurrences(project_root: Path, manifest_path: Path) -> Dict[str, A
         fh.write("\n")
 
     return {
-        "status": "ok",
-        "ground_truth_version": target_version,
-        "manifest_path": str(manifest_path),
-        "discovered_count": len(tracked_list),
-        "tracked_files": tracked_list
+        "status": "discovered",
+        "count": len(tracked_list),
+        "files": tracked_list
     }
 
 
@@ -182,7 +181,10 @@ def sync_occurrences(project_root: Path, manifest_path: Path, new_version_arg: O
             "message": f"Target version '{target_version}' must match strict SemVer format ^\\d+\\.\\d+\\.\\d+$"
         }
 
-    # Load existing manifest or discover dynamically
+    # Step 1: Execute dynamic discovery pass first to index any newly added files
+    discover_occurrences(project_root, manifest_path)
+
+    # Step 2: Load discovered manifest
     tracked_files: Set[str] = set()
     if manifest_path.exists():
         try:
@@ -192,21 +194,6 @@ def sync_occurrences(project_root: Path, manifest_path: Path, new_version_arg: O
                     tracked_files.update(data["tracked_files"])
         except Exception:
             pass
-
-    # Also discover new files dynamically
-    candidates = scan_project_files(project_root)
-    for fp in candidates:
-        rel_str = str(fp.relative_to(project_root))
-        if rel_str in ["changelog.md", "changelog-dev.md"]:
-            continue
-        try:
-            content = fp.read_text(encoding="utf-8")
-        except Exception:
-            continue
-        for pat in PATTERNS:
-            if pat.search(content):
-                tracked_files.add(rel_str)
-                break
 
     updated_paths: List[str] = []
 
@@ -222,8 +209,8 @@ def sync_occurrences(project_root: Path, manifest_path: Path, new_version_arg: O
 
         new_content = old_content
 
-        # Special case: standalone version.txt
-        if fp.name == "version.txt":
+        # Dedicated version files (version.txt, VERSION, .version)
+        if fp.name in DEDICATED_VERSION_FILENAMES:
             new_content = f"{target_version}\n"
         else:
             for pat in PATTERNS:
@@ -237,7 +224,7 @@ def sync_occurrences(project_root: Path, manifest_path: Path, new_version_arg: O
             fp.write_text(new_content, encoding="utf-8")
             updated_paths.append(rel_path)
 
-    # Always ensure package.json is updated if present
+    # Re-sync package.json if present
     pkg_file = project_root / "package.json"
     if pkg_file.exists():
         try:
@@ -253,7 +240,7 @@ def sync_occurrences(project_root: Path, manifest_path: Path, new_version_arg: O
         except Exception:
             pass
 
-    # Update manifest
+    # Update manifest file with final state
     manifest_data = {
         "ground_truth_version": target_version,
         "tracked_files_count": len(tracked_files),
