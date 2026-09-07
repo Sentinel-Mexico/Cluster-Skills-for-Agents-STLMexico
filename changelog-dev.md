@@ -5,6 +5,15 @@ All notable changes to this project during active development are documented her
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-09-06
+
+### Features
+- Added canonical skill `test-qa-runner` compliant with `agentskills.io` standard.
+- Implemented deterministic QA and test runner `skills/test-qa-runner/scripts/qa_runner.py` with multi-ecosystem auto-detection (Node.js/npm/pnpm/yarn/bun, Python pytest/unittest, Rust cargo test, Go test, and project linters).
+- Integrated token-efficient failure triage extracting exact failure locations (`file:line`), assertion diffs (`Expected ... Received ...`), and failure summaries capped to 5 entries, preventing LLM context window saturation.
+- Enforced Pre-Commit Quality Gate in `skills/test-qa-runner/SKILL.md` (<140 lines) as an inviolable invariant gating execution of `semver-governor` and `git-push-governor`.
+- Authored technical reference manual in `skills/test-qa-runner/references/REFERENCE.md` documenting runtime detection priorities, anti-context bloat patterns, and release lifecycle integration.
+
 ## [0.8.0] - 2026-09-06
 
 ### Features
