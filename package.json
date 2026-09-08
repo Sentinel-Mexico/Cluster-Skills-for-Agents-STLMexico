@@ -1,0 +1,10 @@
+{
+  "name": "cluster-skills-for-agents-stlmexico",
+  "version": "0.10.0",
+  "description": "Official Agent Skills Catalog of Sentinel Mexico compliant with agentskills.io standard",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico.git"
+  }
+}

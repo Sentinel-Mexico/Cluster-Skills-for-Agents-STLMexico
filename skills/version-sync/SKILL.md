@@ -1,18 +1,36 @@
 ---
 name: version-sync
 description: "Universal repository version synchronizer. Recursively scans and updates all occurrences of the application version across plaintext version files (version.txt), frontend UI components, configuration manifests, code constants, and documentation prior to git push."
-license: Apache-2.0
+license: MIT
 compatibility: Universal (Python 3.10+, Git CLI)
 metadata:
   author: "Sentinel Mexico"
   version: "1.1.0"
   repository: "https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico"
+  skill-origin: "skills/version-sync"
 allowed-tools: Bash(git:*) Bash(python3:*) Read Write
 ---
 
 # Universal Version Synchronizer (`version-sync`)
 
 Canonical operational contract for recursively discovering, tracking, and propagating the application version across plaintext version files, visual frontend components, source code constants, configuration manifests, and documentation without LLM context token consumption.
+
+---
+
+## Stage 0: Version Freshness Gate (Optional Update)
+Before executing procedural logic, run:
+```bash
+python3 scripts/check_update.py
+```
+
+If the script returns `update_available: true`, halt execution and prompt the user:
+> "⚠️ Se detectó una nueva versión de la skill `version-sync` (v<latest_version> disponible, v<current_version> instalada). ¿Deseas actualizar antes de continuar? [S/N]"
+
+If the user responds 'S' (Yes):
+- If installed via symlink: run `git pull` in the cluster repository.
+- If installed as standalone/copy: execute:
+  `npx skills add Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico --skill version-sync --agent <active-agent> --force`
+If the user responds 'N' (No), proceed immediately to Stage 1.
 
 ---
 

@@ -1,8 +1,8 @@
 # Sentinel Mexico · Official Agent Skills Catalog
 
 [![Specification](https://img.shields.io/badge/spec-agentskills.io-blue.svg)](https://agentskills.io/specification)
-[![Version](https://img.shields.io/badge/version-0.9.0-blue.svg)](version.txt)
-[![License](https://img.shields.io/badge/license-Apache--2.0-green.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-0.10.0-blue.svg)](version.txt)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-30%2B%20AI%20Runtimes-purple.svg)](#supported-providers--installation-targets)
 [![Repository](https://img.shields.io/badge/repo-Cluster--Skills--for--Agents--STLMexico-red.svg)](https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico)
 
@@ -324,7 +324,7 @@ The `SKILL.md` file defines both the discovery contract and execution instructio
 ---
 name: sample-task-runner
 description: Validates and runs pipeline tests for containerized services. Use when verifying CI test integrity before production commits.
-license: Apache-2.0
+license: MIT
 compatibility: Universal (Python 3.10+, Docker CLI)
 metadata:
   author: Sentinel Mexico
@@ -452,5 +452,5 @@ Skills have operational access to local agent tools and shell environments. Sent
 This repository is designed, maintained, and governed by **Sentinel Mexico**.
 
 * **Repository:** [https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico](https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico)
-* **License:** Apache-2.0 open-source license.
+* **License:** MIT License.
 * **Support & Security Disclosures:** File an issue or security advisory directly via this GitHub repository.

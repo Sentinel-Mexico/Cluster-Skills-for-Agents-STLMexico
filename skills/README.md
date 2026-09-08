@@ -14,6 +14,7 @@ This directory contains the production agent skills catalog. Each skill resides 
 | [`readme-generator`](readme-generator/SKILL.md) | Documentation | `1.1.0` | Institutional README generator with 5-change cadence, Shields.io badges, and sanitized directory tree. |
 | [`sec-optimizer`](sec-optimizer/SKILL.md) | Security & Performance | `1.0.0` | Static code vulnerability auditor (CWE/OWASP) and runtime optimizer with Aesthetic Protection Invariant. |
 | [`test-qa-runner`](test-qa-runner/SKILL.md) | Quality Assurance | `1.0.0` | Automated test runner and Pre-Commit Quality Gate with multi-ecosystem auto-detection and token-efficient triage. |
+| [`cluster-sync`](cluster-sync/SKILL.md) | Synchronization | `1.0.0` | Audits all installed agent skills against the remote GitHub catalog and synchronizes them in batch. |
 
 ---
 

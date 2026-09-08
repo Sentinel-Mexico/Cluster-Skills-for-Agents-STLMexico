@@ -1,18 +1,36 @@
 ---
 name: sec-optimizer
 description: "Specialized code security auditor and performance optimizer. Scans codebase deterministically for security vulnerabilities (injection, hardcoded secrets, unsafe deserialization) and runtime inefficiencies (blocking I/O, memory leaks). Produces a formal remediation action plan and waits for explicit user approval before applying patches. Preserves UI design and visual aesthetics. Use when auditing code quality, hardening security, or optimizing resource consumption."
-license: Apache-2.0
+license: MIT
 compatibility: Universal (Python 3.10+, Git CLI)
 metadata:
   author: "Sentinel Mexico"
   version: "1.0.0"
   repository: "https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico"
+  skill-origin: "skills/sec-optimizer"
 allowed-tools: Bash(python3:*) Read Write
 ---
 
 # Security & Performance Optimizer (`sec-optimizer`)
 
 Canonical operational contract for automated static security vulnerability auditing, runtime resource optimization, and Human-in-the-Loop remediation under Sentinel Mexico engineering governance and the `agentskills.io` standard.
+
+---
+
+## Stage 0: Version Freshness Gate (Optional Update)
+Before executing procedural logic, run:
+```bash
+python3 scripts/check_update.py
+```
+
+If the script returns `update_available: true`, halt execution and prompt the user:
+> "⚠️ Se detectó una nueva versión de la skill `sec-optimizer` (v<latest_version> disponible, v<current_version> instalada). ¿Deseas actualizar antes de continuar? [S/N]"
+
+If the user responds 'S' (Yes):
+- If installed via symlink: run `git pull` in the cluster repository.
+- If installed as standalone/copy: execute:
+  `npx skills add Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico --skill sec-optimizer --agent <active-agent> --force`
+If the user responds 'N' (No), proceed immediately to Stage 1.
 
 ---
 

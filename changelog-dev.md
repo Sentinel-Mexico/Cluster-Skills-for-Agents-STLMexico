@@ -5,6 +5,19 @@ All notable changes to this project during active development are documented her
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2026-09-07
+
+### Features
+- Added canonical meta-skill `cluster-sync` compliant with `agentskills.io` standard for fleet-wide skill auditing and batch synchronization across 40+ AI runtime targets.
+- Implemented deterministic fleet audit and sync engine `skills/cluster-sync/scripts/sync_all.py` supporting dry-run inspection (`--check`), structured JSON export (`--json`), and automated batch updates (`--sync-all`).
+- Implemented deterministic Update Check Gate `scripts/check_update.py` in all catalog skills and templates with 24-hour local caching (`assets/.update_cache.json`), 2-second timeout, and zero-token silent fallback.
+- Injected `Stage 0: Version Freshness Gate (Optional Update)` into all `SKILL.md` workflow contracts.
+
+### Refactoring
+- Executed global repository licensing migration to canonical MIT License across `LICENSE`, `package.json`, root `README.md`, and all `skills/*/SKILL.md` frontmatters while preserving institutional authorship (Sentinel Mexico).
+- Added `skill-origin` metadata attribute to all skill frontmatters and canonical templates.
+- Added repository `.gitignore` for update cache files and Python bytecode artifacts.
+
 ## [0.9.0] - 2026-09-06
 
 ### Features

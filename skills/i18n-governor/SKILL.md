@@ -1,18 +1,36 @@
 ---
 name: i18n-governor
 description: "Expert internationalization (i18n) and localization auditor. Detects locale directories across workspaces (frontend, backend, api), enforces zero-hardcoded strings, verifies 100% key parity against canonical English ground truth, and translates missing keys without English fallback placeholders. Use when adding UI strings, validating translations, or expanding languages."
-license: Apache-2.0
+license: MIT
 compatibility: Universal (Python 3.10+, Git CLI)
 metadata:
   author: "Sentinel Mexico"
   version: "1.0.0"
   repository: "https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico"
+  skill-origin: "skills/i18n-governor"
 allowed-tools: Bash(git:*) Bash(python3:*) Read Write
 ---
 
 # i18n Governor (`i18n-governor`)
 
 Canonical operational contract for repository-wide internationalization, key parity auditing, and token-diff localization under Sentinel Mexico engineering governance.
+
+---
+
+## Stage 0: Version Freshness Gate (Optional Update)
+Before executing procedural logic, run:
+```bash
+python3 scripts/check_update.py
+```
+
+If the script returns `update_available: true`, halt execution and prompt the user:
+> "⚠️ Se detectó una nueva versión de la skill `i18n-governor` (v<latest_version> disponible, v<current_version> instalada). ¿Deseas actualizar antes de continuar? [S/N]"
+
+If the user responds 'S' (Yes):
+- If installed via symlink: run `git pull` in the cluster repository.
+- If installed as standalone/copy: execute:
+  `npx skills add Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico --skill i18n-governor --agent <active-agent> --force`
+If the user responds 'N' (No), proceed immediately to Stage 1.
 
 ---
 

@@ -1,0 +1,12 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Skill Update Cache
+assets/.update_cache.json
+.update_cache.json
+
+# Logs & Runtime
+*.log
+.DS_Store
