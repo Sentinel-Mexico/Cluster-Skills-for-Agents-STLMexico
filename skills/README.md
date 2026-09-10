@@ -6,7 +6,7 @@ This directory contains the production agent skills catalog. Each skill resides 
 
 | Skill | Category | Version | Description |
 | :--- | :--- | :--- | :--- |
-| [`project-init`](project-init/SKILL.md) | Scaffolding | `1.1.0` | Deterministic monorepo/polyrepo generator with Existing Project Guard and dev branch resolution. |
+| [`project-init`](project-init/SKILL.md) | Scaffolding | `1.2.0` | Deterministic monorepo/polyrepo generator with Run-Once Lockfile and bootstrap whitelist guard. |
 | [`semver-governor`](semver-governor/SKILL.md) | Governance | `1.0.0` | Atomic SemVer manager with `--diff-stat` analysis and production milestone enforcement ($\ge 1.0.0$). |
 | [`git-push-governor`](git-push-governor/SKILL.md) | Release | `1.1.0` | Interactive push coordinator and dual changelog synchronizer (`dev` vs. `main`). |
 | [`i18n-governor`](i18n-governor/SKILL.md) | Localization | `1.0.0` | Multi-domain translation crawler, 100% key parity auditor, and token-diff patch injector. |

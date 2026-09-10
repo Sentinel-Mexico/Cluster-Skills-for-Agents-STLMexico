@@ -7,43 +7,83 @@ Standard: agentskills.io (Code-as-Skill)
 """
 
 import argparse
+from datetime import datetime, timezone
 import json
 import os
+from pathlib import Path
 import subprocess
 import sys
-from pathlib import Path
 from typing import Dict, Any, Tuple, Optional, List
 
-ALLOWED_EXISTING_ENTRIES = {
+LOCKFILE_NAME = ".sentinel-init.lock"
+
+# Whitelist of allowed entries in a new/fresh GitHub or Agent repository
+WHITELIST_EXACT = {
     ".git",
     ".gitignore",
-    "readme.md",
-    "README.md",
-    "Readme.md",
-    ".ds_store",
-    ".DS_Store",
     ".gitattributes",
+    ".agent",
+    ".agents",
+    ".github",
+    ".ds_store",
+    "thumbs.db",
+}
+
+WHITELIST_STEMS = {
+    "readme",
+    "license",
+    "licence",
+    "copying",
 }
 
 DEV_BRANCH_CANDIDATES = ["dev", "developer", "devel", "development"]
 
 
-def evaluate_existing_project_guard(target_dir: Path) -> Tuple[bool, Optional[str]]:
+def is_whitelisted(entry_name: str) -> bool:
+    """Checks if an entry belongs to the initial bootstrap whitelist."""
+    name_lower = entry_name.lower()
+    if name_lower in WHITELIST_EXACT:
+        return True
+    p = Path(name_lower)
+    if p.stem in WHITELIST_STEMS:
+        return True
+    return False
+
+
+def evaluate_existing_project_guard(target_dir: Path) -> Tuple[bool, Optional[str], Optional[str]]:
     """
     Evaluates whether the directory is clean for initialization.
-    Aborts if files/folders exist outside allowed bootstrap entries.
+    1. Checks if .sentinel-init.lock exists -> abort with already_initialized.
+    2. Evaluates non-whitelisted files/directories. If any exist -> abort with existing_codebase.
+    Returns: (can_initialize, reason, message)
     """
     if not target_dir.exists():
-        return True, None
+        return True, None, None
 
+    lockfile_path = target_dir / LOCKFILE_NAME
+    if lockfile_path.is_file():
+        return (
+            False,
+            "already_initialized",
+            "El proyecto ya fue inicializado previamente con project-init (lockfile detectado).",
+        )
+
+    unexpected_entries: List[str] = []
     for item in target_dir.iterdir():
-        name = item.name
-        if name in ALLOWED_EXISTING_ENTRIES or name.lower() in ALLOWED_EXISTING_ENTRIES:
+        if is_whitelisted(item.name):
             continue
-        # If any unexpected file or directory is found, abort
-        return False, "existing_project"
+        unexpected_entries.append(item.name)
 
-    return True, None
+    if unexpected_entries:
+        items_preview = ", ".join(sorted(unexpected_entries)[:5])
+        suffix = "..." if len(unexpected_entries) > 5 else ""
+        return (
+            False,
+            "existing_codebase",
+            f"Se detectó código o dependencias existentes en el repositorio ({items_preview}{suffix}). project-init solo debe ejecutarse en repositorios nuevos.",
+        )
+
+    return True, None, None
 
 
 def run_git_cmd(args: List[str], cwd: Path) -> Tuple[int, str, str]:
@@ -99,7 +139,8 @@ def manage_git_branch(target_dir: Path) -> Tuple[bool, str]:
     if code_create == 0:
         return True, "dev"
 
-    # If repo has no commits yet, create orphan or checkout -b
+    # In case of an empty repository with no commits yet:
+    run_git_cmd(["git", "symbolic-ref", "HEAD", "refs/heads/dev"], target_dir)
     return True, "dev"
 
 
@@ -112,8 +153,10 @@ def scaffold_project(target_dir: Path, manifest: Dict[str, Any]) -> Dict[str, An
 
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Root readme.md
-    readme_content = f"""# {project_name}
+    # 1. Root readme.md (preserve if already exists)
+    readme_path = target_dir / "readme.md"
+    if not readme_path.exists() and not (target_dir / "README.md").exists():
+        readme_content = f"""# {project_name}
 
 Official repository architecture scaffolded by **Sentinel Mexico** using `project-init`.
 
@@ -128,7 +171,7 @@ Supported locales: {', '.join(f'`{loc}`' for loc in locales)}
 - Dual changelog tracking (`changelog.md` for production, `changelog-dev.md` for sprint iterations)
 - Asymmetric progressive disclosure structure
 """
-    (target_dir / "readme.md").write_text(readme_content, encoding="utf-8")
+        readme_path.write_text(readme_content, encoding="utf-8")
 
     # 2. changelog.md (Production)
     changelog_prod = """# Changelog
@@ -153,8 +196,18 @@ All active iterations, sprint tasks, and unreleased technical changes are tracke
 """
     (target_dir / "changelog-dev.md").write_text(changelog_dev, encoding="utf-8")
 
-    # 4. .gitignore
-    gitignore_content = """# Dependencies
+    # 4. .gitignore with protected lockfile entry
+    gitignore_path = target_dir / ".gitignore"
+    if gitignore_path.exists():
+        current_gitignore = gitignore_path.read_text(encoding="utf-8")
+        if LOCKFILE_NAME not in current_gitignore:
+            updated_gitignore = (
+                current_gitignore.rstrip()
+                + f"\n\n# Sentinel Init Lockfile\n{LOCKFILE_NAME}\n"
+            )
+            gitignore_path.write_text(updated_gitignore, encoding="utf-8")
+    else:
+        gitignore_content = f"""# Dependencies
 node_modules/
 vendor/
 .venv/
@@ -166,6 +219,9 @@ __pycache__/
 .env
 .env.*
 !.env.example
+
+# Sentinel Init Lockfile
+{LOCKFILE_NAME}
 
 # Build Artifacts
 dist/
@@ -187,7 +243,7 @@ Thumbs.db
 *.zip
 *.tar.gz
 """
-    (target_dir / ".gitignore").write_text(gitignore_content, encoding="utf-8")
+        gitignore_path.write_text(gitignore_content, encoding="utf-8")
 
     # 5. CI Workflow (Optional)
     if include_ci:
@@ -256,6 +312,23 @@ jobs:
 
         created_environments.append(env)
 
+    # 8. Run-Once Lockfile
+    lock_data = {
+        "initialized_at": datetime.now(timezone.utc).isoformat(),
+        "project_name": project_name,
+        "architecture": "monorepo" if is_monorepo else "polyrepo",
+        "is_monorepo": is_monorepo,
+        "environments": created_environments,
+        "locales": locales,
+        "include_ci": include_ci,
+        "generator": "project-init",
+        "version": "1.2.0",
+    }
+    (target_dir / LOCKFILE_NAME).write_text(
+        json.dumps(lock_data, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8"
+    )
+
     return {
         "status": "success",
         "project_name": project_name,
@@ -263,6 +336,7 @@ jobs:
         "environments": created_environments,
         "locales": locales,
         "include_ci": include_ci,
+        "lockfile": str((target_dir / LOCKFILE_NAME).resolve()),
         "path": str(target_dir.resolve())
     }
 
@@ -277,22 +351,26 @@ def main():
     args = parser.parse_args()
     target_dir = Path(args.target_dir).resolve()
 
-    # Rule 1: Immediate abort guard
-    can_init, reason = evaluate_existing_project_guard(target_dir)
+    # Rule 1: Immediate abort guard (evaluated in all modes)
+    can_init, reason, msg = evaluate_existing_project_guard(target_dir)
     if not can_init:
-        result = {"can_initialize": False, "reason": reason}
-        print(json.dumps(result, indent=2))
+        result = {
+            "can_initialize": False,
+            "reason": reason,
+            "message": msg,
+        }
+        print(json.dumps(result, indent=2, ensure_ascii=False))
         sys.exit(0)
 
     # If --check-git is passed
     if args.check_git:
         success, branch = manage_git_branch(target_dir)
         if not success:
-            result = {"can_initialize": False, "reason": branch}
-            print(json.dumps(result, indent=2))
+            result = {"can_initialize": False, "reason": "git_error", "message": branch}
+            print(json.dumps(result, indent=2, ensure_ascii=False))
             sys.exit(1)
         result = {"can_initialize": True, "active_branch": branch}
-        print(json.dumps(result, indent=2))
+        print(json.dumps(result, indent=2, ensure_ascii=False))
         sys.exit(0)
 
     # Scaffolding execution
@@ -313,7 +391,7 @@ def main():
     else:
         # Default check if neither manifest nor check-git is supplied
         success, branch = manage_git_branch(target_dir)
-        print(json.dumps({"can_initialize": True, "active_branch": branch}, indent=2))
+        print(json.dumps({"can_initialize": True, "active_branch": branch}, indent=2, ensure_ascii=False))
         sys.exit(0)
 
     # Ensure dev branch is ready before scaffolding
@@ -321,7 +399,7 @@ def main():
 
     result = scaffold_project(target_dir, manifest_data)
     result["active_branch"] = branch
-    print(json.dumps(result, indent=2))
+    print(json.dumps(result, indent=2, ensure_ascii=False))
     sys.exit(0)
 
 

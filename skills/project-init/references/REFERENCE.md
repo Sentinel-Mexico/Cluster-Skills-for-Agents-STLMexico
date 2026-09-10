@@ -40,11 +40,13 @@ Single-file changelogs in active development teams either lead to frequent merge
 
 ---
 
-## 4. Deterministic Pre-Execution Guard (Existing Project Guard)
+## 4. Deterministic Pre-Execution Guard & Run-Once Lockfile
 
 ### Context
-Re-initializing a non-empty workspace risks overwriting existing configuration files, corrupting git branch history, or wiping local work.
+Re-initializing a non-empty workspace risks overwriting existing configuration files, corrupting git branch history, or wiping local work. Conversely, false positives from initial GitHub repository creation (e.g. `.gitignore`, `LICENSE`, `README.md`) prematurely blocked scaffolding.
 
 ### Technical Rationale
-- **Fail-Safe Abort:** The guard inspects the root filesystem before prompting the user or modifying branches. If any files exist outside base git metadata (`.git/`, `readme.md`, `.gitignore`), the engine halts execution immediately.
-- **Deterministic Verdict:** Returning a structured JSON response (`{"can_initialize": false, "reason": "existing_project"}`) allows orchestrators and agents to abort cleanly without LLM hallucination.
+- **Run-Once Lockfile (`.sentinel-init.lock`):** Upon completing initialization, a metadata lockfile is sealed in the project root. Subsequent invocations detect this lock and halt immediately (`reason: already_initialized`) with zero side-effects.
+- **GitHub Bootstrap Whitelist:** The engine safely allows standard bootstrap entries (`.git`, `.gitignore`, `.gitattributes`, `.agent`, `.agents`, `.github`, `readme.md`, `license`, `copying`, system files). If and only if real application code or dependency definitions exist outside this whitelist does the guard halt (`reason: existing_codebase`).
+- **Deterministic Verdict:** Returning a structured JSON response allows orchestrators and LLM agents to halt cleanly without hallucinations or erroneous retries.
+

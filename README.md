@@ -1,7 +1,7 @@
 # Sentinel Mexico · Official Agent Skills Catalog
 
 [![Specification](https://img.shields.io/badge/spec-agentskills.io-blue.svg)](https://agentskills.io/specification)
-[![Version](https://img.shields.io/badge/version-0.10.0-blue.svg)](version.txt)
+[![Version](https://img.shields.io/badge/version-0.11.0-blue.svg)](version.txt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-30%2B%20AI%20Runtimes-purple.svg)](#supported-providers--installation-targets)
 [![Repository](https://img.shields.io/badge/repo-Cluster--Skills--for--Agents--STLMexico-red.svg)](https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico)
@@ -328,7 +328,7 @@ license: MIT
 compatibility: Universal (Python 3.10+, Docker CLI)
 metadata:
   author: Sentinel Mexico
-  version: "1.0.0"
+  version: "0.11.0"
   repository: [https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico](https://github.com/Sentinel-Mexico/Cluster-Skills-for-Agents-STLMexico)
 allowed-tools: Bash(git:*) Bash(pytest:*) Read
 ---

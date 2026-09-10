@@ -1,8 +1,10 @@
 {
-  "ground_truth_version": "0.9.0",
-  "tracked_files_count": 2,
+  "ground_truth_version": "0.11.0",
+  "tracked_files_count": 4,
   "tracked_files": [
     "README.md",
+    "package-lock.json",
+    "package.json",
     "version.txt"
   ]
 }
